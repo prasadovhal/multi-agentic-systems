@@ -1,0 +1,15 @@
+🔷 Architecture
+
+User Query
+   ↓
+Retriever Tool
+   ↓
+Agent A (Proposer)
+   ↓
+Agent B (Critic)
+   ↓
+Reflection Agent
+   ↓
+Judge Agent
+   ↓
+Final Answer

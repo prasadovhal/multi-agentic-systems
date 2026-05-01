@@ -1,0 +1,14 @@
+🔷 Architecture (Production View)
+
+User Query
+   ↓
+Multi-Agent Graph
+   ↓
+Final Answer
+   ↓
+Evaluation Layer (Judge + Metrics)
+   ↓
+Pass/Fail Gate
+   ↓
+Logs + Metrics Store
+
