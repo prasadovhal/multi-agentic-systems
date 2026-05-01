@@ -1,0 +1,3 @@
+Doc1: Coverage Policy
+
+Health insurance covers hospitalization expenses including surgery, room rent, ICU charges, and doctor fees. However, coverage depends on whether the treatment is listed under the approved procedures. Cosmetic surgeries are excluded unless medically necessary. Pre-existing conditions are covered only after a defined waiting period. Daycare procedures are also included if they require less than 24 hours of hospitalization. Certain advanced treatments may require pre-authorization from the insurer.

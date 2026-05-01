@@ -1,0 +1,13 @@
+# Evolution
+✅ RAG
+- Retrieval only
+- No reasoning guarantee
+
+✅ Single Agent
+- Reasoning + tools
+- Limited scalability
+
+✅ Multi-Agent
+- Specialized reasoning
+- Conflict resolution
+- Parallel + structured thinking

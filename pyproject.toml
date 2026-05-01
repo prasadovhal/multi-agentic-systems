@@ -1,0 +1,27 @@
+[project]
+name = "multi-agentic-systems"
+version = "0.1.0"
+description = "Understanding multi-agentic systems, and evolution from RAG"
+authors = [
+    {name = "Prasad Ovhal",email = "prasadovhal99@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<3.15"
+dependencies = [
+    "ollama (>=0.6.2,<0.7.0)",
+    "faiss-cpu (>=1.13.2,<2.0.0)",
+    "sentence-transformers (>=5.4.1,<6.0.0)",
+    "langgraph (>=1.1.10,<2.0.0)",
+    "pydantic (>=2.13.3,<3.0.0)",
+    "langchain-community (>=0.4.1,<0.5.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ipykernel (>=7.2.0,<8.0.0)"
+]
