@@ -1,24 +1,58 @@
 from imports_for_all_systems import *
 
-########################################################################
+#############################################################################
 
-# Tools
+# tools
+
 def retrieval_tool(query):
     return "\n".join(retrieve(query, k=5))
 
+#############################################################################
+# SMART RETRIEVAL (DYNAMIC TOOL USE)
 
-############################################################## 
+def smart_retrieval_agent(query):
+    decision = llm(f"""
+    Decide if retrieval is needed.
 
-# Agents
+    Query: {query}
 
-## Agent A (Proposer)
+    Answer only YES or NO.
+    """)
+
+    if "YES" in decision.upper():
+        return retrieval_tool(query)
+    return ""
+
+#############################################################################
+# STATE
+
+from typing import TypedDict
+
+class DebateState(TypedDict):
+    query: str
+    context: str
+    answer_a: str
+    critique: str
+    refined: str
+    final: str
+    confidence: float
+    iterations: int
+
+#############################################################################
+# AGENTS
+
+# 1. CONTEXT BUILDER (SMART RETRIEVAL)
+def context_agent(state):
+    context = smart_retrieval_agent(state["query"])
+    return {"context": context}
+
+
+# 2. PROPOSER
 def proposer(state):
-    context = retrieval_tool(state["query"])
-
     prompt = f"""
     Answer the query using context:
 
-    {context}
+    {state.get('context','')}
 
     Query: {state['query']}
     """
@@ -26,7 +60,7 @@ def proposer(state):
     return {"answer_a": llm(prompt)}
 
 
-## Agent B (Critic)
+# 3. CRITIC
 def critic(state):
     prompt = f"""
     Critically evaluate this answer:
@@ -42,8 +76,7 @@ def critic(state):
     return {"critique": llm(prompt)}
 
 
-## Reflection Agent
-
+# 4. REFLECTION (IMPROVEMENT)
 def reflection(state):
     prompt = f"""
     Improve answer using critique:
@@ -57,11 +90,13 @@ def reflection(state):
     Provide improved answer.
     """
 
-    return {"refined": llm(prompt)}
+    return {
+        "refined": llm(prompt),
+        "iterations": state.get("iterations", 0) + 1
+    }
 
 
-## Judge Agent
-
+# 5. JUDGE (FINAL SELECTION)
 def judge(state):
     prompt = f"""
     Compare answers:
@@ -69,103 +104,89 @@ def judge(state):
     A: {state['answer_a']}
     B: {state['refined']}
 
-    Which is better and why?
-
-    Return final answer.
+    Return best answer only.
     """
 
     return {"final": llm(prompt)}
 
-####################################################
 
-from typing import TypedDict
+import json
 
-class DebateState(TypedDict):
-    query: str
-    answer_a: str
-    critique: str
-    refined: str
-    final: str
+# 6. CONFIDENCE SCORER
+def confidence_agent(state):
+    prompt = f"""
+    Evaluate answer quality:
+
+    {state['final']}
+
+    Return JSON:
+    {{
+        "confidence": 0-1
+    }}
+    """
+
+    try:
+        result = json.loads(llm(prompt))
+        return {"confidence": result["confidence"]}
+    except:
+        return {"confidence": 0.0}
 
 
-######################################################
+#############################################################################
+# CONTROL LOGIC (ITERATION LOOP)
 
-# langgraph
+def should_continue(state):
+    # stop if enough iterations
+    if state.get("iterations", 0) >= 2:
+        return "judge"
+
+    return "critic"
+
+
+#############################################################################
+# GRAPH
 
 from langgraph.graph import StateGraph
 
 builder = StateGraph(DebateState)
 
+builder.add_node("context", context_agent)
 builder.add_node("proposer", proposer)
 builder.add_node("critic", critic)
 builder.add_node("reflection", reflection)
 builder.add_node("judge", judge)
+builder.add_node("confidence", confidence_agent)
 
-builder.set_entry_point("proposer")
+builder.set_entry_point("context")
 
+builder.add_edge("context", "proposer")
 builder.add_edge("proposer", "critic")
-builder.add_edge("critic", "reflection")
-builder.add_edge("reflection", "judge")
+
+builder.add_conditional_edges("critic", should_continue)
+
+builder.add_edge("reflection", "critic")   # iterative loop
+builder.add_edge("judge", "confidence")
 
 graph = builder.compile()
 
+#############################################################################
+# RUN
 
-#########################################################
+query = "If I have a pre-existing condition and surgery, what about waiting period AND reimbursement?"
 
-# run
 result = graph.invoke({
-    "query": "Is surgery covered under insurance with pre-existing condition?"
+    "query": query,
+    "iterations": 0
 })
 
+print("\n FINAL ANSWER \n")
 print(result["final"])
 
-#################################################
+print("\n CONFIDENCE \n")
+print(result["confidence"])
 
-# Add Tool Usage (Dynamic)
-
-def smart_retrieval_agent(query):
-    prompt = f"""
-    Decide if retrieval is needed for:
-    {query}
-
-    If yes → say RETRIEVE
-    else → answer directly
-    """
-
-    decision = llm(prompt)
-
-    if "RETRIEVE" in decision:
-        return retrieval_tool(query)
-    return ""
-
-# Add Iterative Debate (Advanced)
-
-for _ in range(2):
-    critique = critic(state)
-    state.update(critique)
-
-    refined = reflection(state)
-    state.update(refined)
-
-
-# Add Confidence Scoring
-
-def judge_with_score(state):
-    prompt = f"""
-    Evaluate final answer:
-
-    {state['refined']}
-
-    Return:
-    {{
-        "answer": "...",
-        "confidence": 0-1
-    }}
-    """
-    return llm(prompt)
-
-
-# add error handling
+#############################################################################
+# ERROR HANDLING
 
 if "don't know" in result["final"].lower():
-    return "Fallback to human review"
+    print("\n Fallback to human review triggered")

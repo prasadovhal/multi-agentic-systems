@@ -56,3 +56,8 @@ conflict resolution
 multi-domain reasoning
 
 """
+
+
+print(single_agent(
+    "If surgery is excluded BUT approved under exception AND waiting period not completed, what happens to claim + reimbursement?"
+))

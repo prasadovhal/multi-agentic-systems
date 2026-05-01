@@ -33,3 +33,16 @@ waiting
 reimbursement
 
 """
+
+query = "If I have a pre-existing condition and surgery, what about waiting period AND reimbursement?"
+
+context = "\n".join(retrieve(query))
+
+response = llm(f"""
+Answer based only on context:
+{context}
+
+Question: {query}
+""")
+
+print(response)

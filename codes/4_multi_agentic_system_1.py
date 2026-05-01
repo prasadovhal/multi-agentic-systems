@@ -271,4 +271,4 @@ for q in test_set:
 
 def detect_drift():
     if metrics["avg_score"] < 0.6:
-        print("⚠️ Model drift detected!")
+        print("Model drift detected!")
