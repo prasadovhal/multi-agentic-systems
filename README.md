@@ -2,6 +2,31 @@
 Understanding multi-agentic systems, and evolution from RAG
 
 
+# Set up Python & Poetry
+
+1. cd transformers_tutorial
+2. install poetry
+`(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -`
+3. run `C:\Users\user_name\AppData\Roaming\Python\Scripts`
+4. check poetry version `poetry --version`
+5. set `poetry config virtualenvs.in-project true`
+6. run `poetry install`
+7. set venv 
+   - for windows `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned` or `.venv\Scripts\activate`
+   - for linux/mac `source .venv/bin/activate`
+
+# changes you need to make
+
+1. Create `constant.py` file inside `codes/` folder.
+2. Add the following keys inside it:
+   - `GOOGLE_API_KEY = "your_google_api_key"`
+   - `OPENAI_KEY = "your_openai_key"`
+   - `HUGGINGFACE_API_KEY = "your_huggingface_api_key"`
+   - `LANGFUSE_SECRET_KEY = "your_langfuse_secret_key"`
+   - `LANGFUSE_PUBLIC_KEY = "your_langfuse_public_key"`
+   - `LANGFUSE_BASE_URL = "https://cloud.langfuse.com"`
+
+
 # Phase 1: Basic RAG (Knowledge Retrieval)
 - The Problem: Answering questions based on a specific, private dataset that the LLM wasn't trained on.
 
@@ -41,3 +66,17 @@ Understanding multi-agentic systems, and evolution from RAG
 - State Management: Use a shared "State" or "Blackboard" where agents can pass data to one another.
 - Workflow Mapping (The Graph): Define the edges—once the Researcher is done, the Legal Analyst starts; if the Analyst finds an error, it loops back to the Researcher.
 - Supervision: Implement a "Manager Agent" to review the final output before delivery.
+
+# What it covers
+
+- RAG vs Single agent vs multi agent
+- planner and decision agents
+- self reflection
+- Hierarchical supervisor + dynamic task allocation
+- Peer-to-peer agent calls
+- Conflict resolution (scoring + voting + arbitration)
+- Tree of Thoughts (multi-path + pruning)
+- Replanning mid-execution
+- Memory system (episodic + semantic + procedural, versioning, scoring, pruning, persistence)
+- Observability (trace logs + replay)
+- Evaluation (benchmark + regression testing)
